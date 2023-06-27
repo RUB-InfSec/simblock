@@ -33,7 +33,6 @@ import simblock.settings.NetworkConfiguration;
  * an upload bandwidth
  * and a download bandwidth. Node degrees follow a predefined degree distribution.
  */
-// TODO how is this degree distribution calculated and what does the double array mean
 public class Network {
 
   /**
@@ -86,7 +85,6 @@ public class Network {
    *
    * @return the double [ ]
    */
-  //TODO
   public static double[] getDegreeDistribution() {
     return DEGREE_DISTRIBUTION;
   }
@@ -94,7 +92,6 @@ public class Network {
   /**
    * Prints the currently active regions to outfile.
    */
-  //TODO
   public static void printRegion() {
     STATIC_JSON_FILE.print("{\"region\":[");
 

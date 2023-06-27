@@ -16,12 +16,15 @@
 
 package simblock.node.routing;
 
+import static simblock.settings.NetworkConfiguration.getUSEMINGPOOLS;
+import static simblock.settings.SimulationConfiguration.DEBUG_MODE;
 import static simblock.simulator.Main.OUT_JSON_FILE;
 import static simblock.simulator.Simulator.getSimulatedNodes;
 import static simblock.simulator.Timer.getCurrentTime;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
 import simblock.node.Node;
 
 /**
@@ -50,7 +53,6 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
     super(selfNode);
   }
 
-
   /**
    * Gets all known outbound and inbound nodes.
    *
@@ -63,19 +65,27 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
     return neighbors;
   }
 
-  /**
-   * Initializes a new BitcoinCore routing table. From a pool of
-   * all available nodes, choose candidates at random and
-   * fill the table using the allowed outbound connections
-   * amount.
-   */
-  //TODO this should be done using the bootstrap node
-  public void initTable() {
+  public void initTable(boolean connectToMiners) {
     ArrayList<Integer> candidates = new ArrayList<>();
+    ArrayList<Integer> miners = new ArrayList<>();
     for (int i = 0; i < getSimulatedNodes().size(); i++) {
-      candidates.add(i);
+      if (connectToMiners && this.getSelfNode().getMiningPower() > 0 && getSimulatedNodes().get(i).getMiningPower() > 0 ) {
+        miners.add(i);
+      } else {
+        candidates.add(i);
+      }
     }
+    Collections.shuffle(miners);
     Collections.shuffle(candidates);
+    if (connectToMiners) {
+      for (int miner : miners) {
+        if (this.outbound.size() < this.getNumConnection()) {
+          this.addNeighbor(getSimulatedNodes().get(miner));
+        } else {
+          break;
+        }
+      }
+    }
     for (int candidate : candidates) {
       if (this.outbound.size() < this.getNumConnection()) {
         this.addNeighbor(getSimulatedNodes().get(candidate));
@@ -101,7 +111,9 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
         node) || this.outbound.size() >= this.getNumConnection()) {
       return false;
     } else if (this.outbound.add(node) && node.getRoutingTable().addInbound(getSelfNode())) {
-      printAddLink(node);
+      if (DEBUG_MODE) {
+        printAddLink(node);
+      }
       return true;
     } else {
       return false;
@@ -117,7 +129,9 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
    */
   public boolean removeNeighbor(Node node) {
     if (this.outbound.remove(node) && node.getRoutingTable().removeInbound(getSelfNode())) {
-      printRemoveLink(node);
+      if (DEBUG_MODE) {
+        printRemoveLink(node);
+      }
       return true;
     }
     return false;
@@ -131,7 +145,9 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
    */
   public boolean addInbound(Node from) {
     if (this.inbound.add(from)) {
-      printAddLink(from);
+      if (DEBUG_MODE) {
+        printAddLink(from);
+      }
       return true;
     }
     return false;
@@ -145,13 +161,14 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
    */
   public boolean removeInbound(Node from) {
     if (this.inbound.remove(from)) {
-      printRemoveLink(from);
+      if (DEBUG_MODE) {
+        printRemoveLink(from);
+      }
       return true;
     }
     return false;
   }
 
-  //TODO add example
   private void printAddLink(Node endNode) {
     OUT_JSON_FILE.print("{");
     OUT_JSON_FILE.print("\"kind\":\"add-link\",");
@@ -164,7 +181,6 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
     OUT_JSON_FILE.flush();
   }
 
-  //TODO add example
   private void printRemoveLink(Node endNode) {
     OUT_JSON_FILE.print("{");
     OUT_JSON_FILE.print("\"kind\":\"remove-link\",");
@@ -176,5 +192,4 @@ public class BitcoinCoreTable extends AbstractRoutingTable {
     OUT_JSON_FILE.print("},");
     OUT_JSON_FILE.flush();
   }
-
 }

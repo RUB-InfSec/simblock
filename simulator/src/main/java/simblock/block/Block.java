@@ -17,6 +17,7 @@
 package simblock.block;
 
 import simblock.node.Node;
+import java.util.HashSet;
 
 /**
  * The representation of a block.
@@ -52,6 +53,8 @@ public class Block {
    */
   private static int latestId = 0;
 
+  protected final HashSet <Transaction> transactionPool;
+
   /**
    * Instantiates a new Block.
    *
@@ -59,12 +62,13 @@ public class Block {
    * @param minter the minter
    * @param time   the time
    */
-  public Block(Block parent, Node minter, long time) {
+  public Block(Block parent, Node minter, long time,HashSet<Transaction> transactions) {
     this.height = parent == null ? 0 : parent.getHeight() + 1;
     this.parent = parent;
     this.minter = minter;
     this.time = time;
     this.id = latestId;
+    this.transactionPool =transactions;
     latestId++;
   }
 
@@ -101,7 +105,6 @@ public class Block {
    *
    * @return the time
    */
-  //TODO what format
   public long getTime() {
     return this.time;
   }
@@ -111,11 +114,12 @@ public class Block {
    *
    * @return the id
    */
-  //TODO what format
   public int getId() {
     return this.id;
   }
-
+  public HashSet<Transaction> getTransactions(){
+    return this.transactionPool;
+  }
   /**
    * Generates the genesis block. The parent is set to null and the time is set to 0
    *
@@ -124,7 +128,7 @@ public class Block {
    */
   @SuppressWarnings("unused")
   public static Block genesisBlock(Node minter) {
-    return new Block(null, minter, 0);
+    return new Block(null, minter, 0,new HashSet<Transaction>());
   }
 
   /**

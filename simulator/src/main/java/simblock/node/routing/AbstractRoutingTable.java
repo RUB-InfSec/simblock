@@ -64,8 +64,9 @@ public abstract class AbstractRoutingTable {
 
   /**
    * Table initialization.
+   * public abstract void initTable(boolean connectToMiners);
    */
-  public abstract void initTable();
+  public abstract void initTable(boolean connectToMiners);
 
   /**
    * Gets neighbors.

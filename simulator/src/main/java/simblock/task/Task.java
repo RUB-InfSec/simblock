@@ -25,7 +25,6 @@ public interface Task {
    *
    * @return the execution duration of the task
    */
-  // TODO this is not an interval this is a duration
   long getInterval();
 
   /**

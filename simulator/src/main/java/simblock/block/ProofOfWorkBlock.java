@@ -18,10 +18,16 @@ package simblock.block;
 
 import static simblock.simulator.Simulator.getSimulatedNodes;
 import static simblock.simulator.Simulator.getTargetInterval;
+import static simblock.simulator.Timer.putTask;
+import static simblock.settings.SimulationConfiguration.INITIAL_TRANSACTIONS;
+import static simblock.settings.SimulationConfiguration.INTERVAL;
 
 import java.math.BigInteger;
-import simblock.node.Node;
 
+import simblock.node.Node;
+import simblock.task.TransactionTask;
+
+import java.util.HashSet;
 
 /**
  * The type Proof of work block.
@@ -40,8 +46,8 @@ public class ProofOfWorkBlock extends Block {
    * @param time       the time
    * @param difficulty the difficulty
    */
-  public ProofOfWorkBlock(ProofOfWorkBlock parent, Node minter, long time, BigInteger difficulty) {
-    super(parent, minter, time);
+  public ProofOfWorkBlock(ProofOfWorkBlock parent, Node minter, long time, BigInteger difficulty, HashSet<Transaction> transactions) {
+    super(parent, minter, time, transactions);
     this.difficulty = difficulty;
 
     if (parent == null) {
@@ -49,10 +55,8 @@ public class ProofOfWorkBlock extends Block {
       this.nextDifficulty = ProofOfWorkBlock.genesisNextDifficulty;
     } else {
       this.totalDifficulty = parent.getTotalDifficulty().add(difficulty);
-      // TODO: difficulty adjustment
       this.nextDifficulty = parent.getNextDifficulty();
     }
-
   }
 
   /**
@@ -85,6 +89,7 @@ public class ProofOfWorkBlock extends Block {
   /**
    * Generates the genesis block, gets the total mining power and adjusts the difficulty of the
    * next block accordingly.
+   * Also start creates the frist scheduled transaction if activated
    *
    * @param minter the minter
    * @return the genesis block
@@ -94,7 +99,14 @@ public class ProofOfWorkBlock extends Block {
     for (Node node : getSimulatedNodes()) {
       totalMiningPower += node.getMiningPower();
     }
+    if (minter.getPropagationProtocol().useTransactions()) {
+      for (int i = 0; i <= INITIAL_TRANSACTIONS; i++) {
+        Transaction t = new Transaction();
+        TransactionTask task = new TransactionTask(null, getSimulatedNodes().get((int) (Math.random() * getSimulatedNodes().size())), t, (long) (Math.random() * INTERVAL));
+        putTask(task);
+      }
+    }
     genesisNextDifficulty = BigInteger.valueOf(totalMiningPower * getTargetInterval());
-    return new ProofOfWorkBlock(null, minter, 0, BigInteger.ZERO);
+    return new ProofOfWorkBlock(null, minter, 0, BigInteger.ZERO, new HashSet<Transaction>());
   }
 }

@@ -49,7 +49,7 @@ public class SamplePoSBlock extends Block {
   public SamplePoSBlock(
       SamplePoSBlock parent, Node minter, long time, BigInteger difficulty
   ) {
-    super(parent, minter, time);
+    super(parent, minter, time, null);
 
     this.coinages = new HashMap<>();
     if (parent == null) {

@@ -16,11 +16,15 @@
 
 package simblock.simulator;
 
+import static simblock.settings.SimulationConfiguration.FILTER_MINING_TASKS;
+import static simblock.settings.SimulationConfiguration.MAX_MINING_TASKS;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import simblock.task.Task;
 
+import simblock.task.Task;
+import simblock.block.Block;
 
 /**
  * The type Timer schedules the execution of simulation tasks stored in a Future Event List (FEL)
@@ -39,13 +43,15 @@ public class Timer {
    * executed, the key - value
    * pair is to be removed from the mapping.
    */
-  //TODO a bit redundant since Task is again stored in ScheduledTask. Is there a better approach?
   private static final Map<Task, ScheduledTask> taskMap = new HashMap<>();
+
   /**
    * Initial simulation time in milliseconds.
    */
-  //TODO is it milliseconds?
   private static long currentTime = 0L;
+  public static long TASK_COUNTS = 0;
+
+  public static final Map<Block,Long[]> BlockMiningTaksMap = new HashMap<>();
 
   /**
    * Represents a {@link Task} that is scheduled to be executed.
@@ -57,7 +63,7 @@ public class Timer {
     /**
      * Instantiates a new ScheduledTask.
      *
-     * @param task          - the task to be executed
+     * @param task      - the task to be executed
      * @param scheduledTime - the simulation time at which the task is to be executed
      */
     private ScheduledTask(Task task, long scheduledTime) {
@@ -89,6 +95,7 @@ public class Timer {
      * @param o other task
      * @return 1 if self is executed later, 0 if concurrent and -1 if self is to be executed before.
      */
+    @Override
     public int compareTo(ScheduledTask o) {
       if (this.equals(o)) {
         return 0;
@@ -100,6 +107,13 @@ public class Timer {
       order = System.identityHashCode(this) - System.identityHashCode(o);
       return order;
     }
+  }
+
+  public static void resetTimer() {
+    taskQueue.clear();
+    taskMap.clear();
+    currentTime = 0;
+    TASK_COUNTS = 0;
   }
 
   /**
@@ -153,8 +167,20 @@ public class Timer {
    */
   public static void putTask(Task task) {
     ScheduledTask scheduledTask = new ScheduledTask(task, currentTime + task.getInterval());
+    taskQueue.add(scheduledTask);
+    TASK_COUNTS++;
+  }
+
+  /**
+   * add mining task to queue and hashmap to keep them removable
+   *
+   * @param task mining task
+   */
+  public static void addRemovableTask(Task task) {
+    ScheduledTask scheduledTask = new ScheduledTask(task, currentTime + task.getInterval());
     taskMap.put(task, scheduledTask);
     taskQueue.add(scheduledTask);
+    TASK_COUNTS++;
   }
 
   /**
@@ -177,5 +203,29 @@ public class Timer {
    */
   public static long getCurrentTime() {
     return currentTime;
+  }
+
+  /**
+   * if the mining taks are filtered to reduce the size of the task queue
+   * this function calcultes whether an new mining taskis added
+   * @param block the block
+   * @param interval time until mining
+   * @return if the mining task is added
+   */
+  public static boolean checkMiningTask(Block block,long interval){
+    if(!FILTER_MINING_TASKS){
+      return true;
+    }
+    if(BlockMiningTaksMap.containsKey(block)){
+      if(BlockMiningTaksMap.get(block)[0]<MAX_MINING_TASKS || BlockMiningTaksMap.get(block)[1]< interval){
+        BlockMiningTaksMap.replace(block, new Long[]{BlockMiningTaksMap.get(block)[0]+1,Math.min(BlockMiningTaksMap.get(block)[1],interval)});
+        return true;
+      }else{
+        return false;
+      }
+    }else{
+      BlockMiningTaksMap.put(block,new Long[]{0L,getCurrentTime()+interval});
+      return true;
+    }
   }
 }

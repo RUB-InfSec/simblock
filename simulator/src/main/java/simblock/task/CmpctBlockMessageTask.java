@@ -16,6 +16,7 @@
 
 package simblock.task;
 
+import static simblock.settings.SimulationConfiguration.DEBUG_MODE;
 import static simblock.simulator.Main.OUT_JSON_FILE;
 import static simblock.simulator.Network.getLatency;
 import static simblock.simulator.Timer.getCurrentTime;
@@ -64,20 +65,20 @@ public class CmpctBlockMessageTask extends AbstractMessageTask {
   @Override
   public void run() {
 
-    this.getFrom().sendNextBlockMessage();
-
-    OUT_JSON_FILE.print("{");
-    OUT_JSON_FILE.print("\"kind\":\"flow-block\",");
-    OUT_JSON_FILE.print("\"content\":{");
-    OUT_JSON_FILE.print("\"transmission-timestamp\":" + (getCurrentTime() - this.interval) + ",");
-    OUT_JSON_FILE.print("\"reception-timestamp\":" + getCurrentTime() + ",");
-    OUT_JSON_FILE.print("\"begin-node-id\":" + getFrom().getNodeID() + ",");
-    OUT_JSON_FILE.print("\"end-node-id\":" + getTo().getNodeID() + ",");
-    OUT_JSON_FILE.print("\"block-id\":" + block.getId());
-    OUT_JSON_FILE.print("}");
-    OUT_JSON_FILE.print("},");
-    OUT_JSON_FILE.flush();
-
+    this.getFrom().getPropagationProtocol().endBlockTransmission();;
+    if(DEBUG_MODE){
+      OUT_JSON_FILE.print("{");
+      OUT_JSON_FILE.print("\"kind\":\"flow-block\",");
+      OUT_JSON_FILE.print("\"content\":{");
+      OUT_JSON_FILE.print("\"transmission-timestamp\":" + (getCurrentTime() - this.interval) + ",");
+      OUT_JSON_FILE.print("\"reception-timestamp\":" + getCurrentTime() + ",");
+      OUT_JSON_FILE.print("\"begin-node-id\":" + getFrom().getNodeID() + ",");
+      OUT_JSON_FILE.print("\"end-node-id\":" + getTo().getNodeID() + ",");
+      OUT_JSON_FILE.print("\"block-id\":" + block.getId());
+      OUT_JSON_FILE.print("}");
+      OUT_JSON_FILE.print("},");
+      OUT_JSON_FILE.flush();
+    }
     super.run();
   }
 

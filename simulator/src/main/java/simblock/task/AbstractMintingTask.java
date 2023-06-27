@@ -26,7 +26,7 @@ public abstract class AbstractMintingTask implements Task {
   /**
    * The node to mint the block.
    */
-  private final Node minter;
+  protected final Node minter;
   /**
    * The parent block.
    */

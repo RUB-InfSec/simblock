@@ -1,7 +1,9 @@
 # SimBlock User Guide
+## 0. Acknowledgement
+This implementation is based on the Simblock simulator published at https://github.com/dsg-titech/simblock
 
 ## 1. Environment requirements
-SimBlock is available on operating systems such as Windows, MacOS, Ubuntu Linux or any Unix platform that supports Java.  
+SimBlock is available on operating systems such as Windows, MacOS, Ubuntu Linux or any Unix platform that supports Java.
 It requires JDK and Gradle with the following versions.
 
 Note that the repository of SimBlock includes Gradle wrapper so that you can also install Gradle automatically (we mention it later).
@@ -11,14 +13,8 @@ Note that the repository of SimBlock includes Gradle wrapper so that you can als
 | JDK | 1.8.0 or later |
 | Gradle | 5.1.1 or later |
 
-## 2. Download
-Download the SimBlock repository as a zip file from GitHub and unzip, or clone the repository.
-
-Release list: [https://github.com/dsg-titech/simblock/releases](https://github.com/dsg-titech/simblock/releases)  
-Command for clone: `$ git clone git@github.com:dsg-titech/simblock.git`
-
 ### 2-a. Directory structure
-The structure of the unzipped or cloned directory is as follows:  
+The structure of the unzipped or cloned directory is as follows:
 
 ```
 simblock
@@ -50,7 +46,7 @@ simblock
 
 Hereafter, the name of the root directory of the unzipped or cloned repository is denoted as *\<ROOT_DIR\>*.
 
-First, open a terminal software (e.g., xterm, command prompt, etc.) and move to *\<ROOT_DIR\>*. 
+First, open a terminal software (e.g., xterm, command prompt, etc.) and move to *\<ROOT_DIR\>*.
 
 ### 3-a. If Gradle is installed
 You can build by the following Gradle command, if you have already installed Gradle.
@@ -101,38 +97,33 @@ In this case, *build* is executed after *clean*.
 ## 4. Run SimBlock
 There are two main ways to run SimBlock: by using Gradle command and by using build products.
 
+
 ### 4-a. Run with Gradle command
 Run following Gradle command in *\<ROOT_DIR\>*, then the simulator starts up.
 
-`$ gradle :simulator:run`
+`$ gradle run --args"[version][mining disribution][propagation Protocol][run-number][use_transactions][filter mining tasks][fixed block size][P] [Q][M] "`
+| Parameter | Description |
+|:-----------|:------------|
+|[version]| is a string that represents the current simulator version
+[mining distribution]| has to be one of {default, zeronodes, miningpools, default_z} that controll the distribution of the mining power in the network|
+[Propagation Protocol]| has to be one of {adv,cbr,hybrid,push,monero,cardano} and controlls the node communication|
+[run-number]| can be any integer to indentify the run (also used as seed for randomness)|
+[use_transaction]| has to be a bolean that enables/disables the creation and handling of transactions|
+[filter mining tasks]| has to be a bolean that enables/disables the ruduction of conccurent Mining tasks in the queue to a fixed number compared to one per node|
+[fixed block size]| has to be a bolean that enables/disables the usage of the bitcoin blocksizes compared to spezific blocksizes for each diffrent blockchain|
+[P]| optional float number that represents the probability of a node to be adverssarial default: 0.0|
+[Q]| only needed  if [P] is > 0.0 float number that represents the propability of a connection between a adversarial node and a regular node to be delayed|
+[M]| only need if [P] > 0.0 lon number that represents the ms a adversarial node delays a message on a connection affected by [Q](use -1 to completly drop messages)|
+
+Examples: `$gradle run  --args "adv_test default btc 2026 true false false"`
+or
+`$gradle run  --args "adv_test default btc 13 false true true 0.15 0.5 3000000"`
+
+
+
 
 Output files of the simulator will be stored in *\<ROOT_DIR\>/simulator/src/dist/output*.
 
-### 4-b. Run with build product
-Extract the distribution archive (zip, tar) of *\<ROOT_DIR\>/simulator/build/distributions*.
-Then, the following directory structure will be created.
-
-```
-SimBlock
-+-- bin
-+-- conf
-+-- lib
-+-- output
-```
-
-A script for execution is in *bin* directory.
-
-By executing *runSimBlock* (*runSimBlock.bat* for Windows) in the terminal, the simulator starts up.
-
-Output files of the simulator will be stored in *output* directory.
-
-### 4-c. Other ways
-The extracted distribution archive contains the jar file of SimBlock (*lib/simulator.jar*).
-Of course, it is also possible to execute this jar file directly with the java command.
-Note that it is required to set the classpath appropriately.
-
-You can also run SimBlock on IDEs, such as Eclipse.
-It is explained later in the section of "Import to IDE".
 
 ## 5. Simulator parameter
 | Parameter | Location of definition | Description |
@@ -195,12 +186,28 @@ output contents are as follows:
 			- reception-timestamp: Timestamp when a block is recieved.
 			- begin-node-id: Source node.
 			- end-node-id: End node.
+## 7. Added Functionality
+### 7-a. Adversarial Nodes
+With the AdversarialNodes Class it is possible to include nodes into the Network that are not following the regular communication layer protocol.
+Based on parameters they are capable of either dropping or delaying all messages to individual nodes or all neigbors and thus perfom eclipse or partial eclipse attacks on the network.
 
-## 7. Import to IDE
+### 7-b. Additional propagation modes
+With the CBR, Advertisement, Hybrid, Monero, Cardano, and Push classes it is possible to modularly  choose what kind of communication layer protocol the netwrok should use.
+Each of them implements an abstract Propagation protocol Class that handles basic handling of messages and overrides the parts where they differ.
+All of them are compatible with adversarial nodes and regualar nodes.
+
+### 7-c. Calibration to 2022 Bitcoin Network Values
+The used Upload, Download and Latency vaules for the nodes, where obtained, by fitting the block propagtion times to values measured on the
+real Bitcoin blockchain by the Decentralized Systems and Network Services Research Group at KIT. And thuse enable the simulator to mimic the bitcoin propagation as close as possible.
+### 7-d. Adjusted output
+The main output of the Block propagtion times was changed in  way to no longer linearly grow in size by the number of nodes in the Network.
+It also displays the sum of the mining power of all nodes that recieve the block in the same time interval.
+
+## 8. Import to IDE
 By using Gradle, you can generate configuration files of an IDE and easily import them into it.
 
-### 7-a. For IntelliJ IDEA
-By executing the following Gradle command, configuration files for IntelliJ IDEA are generated. 
+### 8-a. For IntelliJ IDEA
+By executing the following Gradle command, configuration files for IntelliJ IDEA are generated.
 
 `$ gradle idea`
 
@@ -214,7 +221,7 @@ Generated files are listed as follows:
 | *\<ROOT_DIR\>/simulator/simulator.iml* |
 
 With IntelliJ IDEA, select **File -> Open** and select *\<ROOT_DIR\>.ipr*.
-*\<ROOT_DIR\>/simulator* will be imported as a module. 
+*\<ROOT_DIR\>/simulator* will be imported as a module.
 
 Then, you can run the simulator with the IDE.
 For example, select *\<ROOT_DIR\>/simulator/src/main/java/SimBlock/simulator/Main.java* from the tool window of the project structure,
@@ -233,8 +240,8 @@ You can also instruct the execution of *cleanIdea* and *idea* at one time as fol
 
 In this case, *idea* is executed after *cleanIdea*.
 
-### 7-b. For Eclipse
-By executing the following Gradle command, configuration files for Eclipse are generated. 
+### 8-b. For Eclipse
+By executing the following Gradle command, configuration files for Eclipse are generated.
 
 `$ gradle eclipse`
 

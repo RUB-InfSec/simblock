@@ -69,9 +69,7 @@ public abstract class AbstractMessageTask implements Task {
    */
   public long getInterval() {
     long latency = getLatency(this.from.getRegion(), this.to.getRegion());
-    // Add 10 milliseconds here, why?
-    //TODO
-    return latency + 10;
+    return latency ;
   }
 
   /**

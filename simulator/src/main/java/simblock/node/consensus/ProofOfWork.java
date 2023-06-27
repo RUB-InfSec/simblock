@@ -44,6 +44,9 @@ public class ProofOfWork extends AbstractConsensusAlgo {
   @Override
   public MiningTask minting() {
     Node selfNode = this.getSelfNode();
+    if(selfNode.getMiningPower()==0){
+      return null;
+    }
     ProofOfWorkBlock parent = (ProofOfWorkBlock) selfNode.getBlock();
     BigInteger difficulty = parent.getNextDifficulty();
     double p = 1.0 / difficulty.doubleValue();
