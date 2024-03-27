@@ -1,15 +1,14 @@
+## Source code for our paper *Larger-scale Nakamoto-style Blockchains Don't Necessarily Offer Better Security*
+
 ## What is SimBlock?
 
-SimBlock is an open source blockchain network simulator, developed by Distributed Systems Group, Tokyo Institute of Technology.
+SimBlock is an open source blockchain network simulator, originally developed by Distributed Systems Group, Tokyo Institute of Technology.
 
-https://dsg-titech.github.io/simblock/
+For our paper, we optimized simblock and added features such as new propagation mechanisms. The full list of changes can be found in the user guide:
 
-- [User Guide (English)](https://github.com/dsg-titech/simblock/blob/master/docs/en/usage.md)
-- [User Guide (Japanese)](https://github.com/dsg-titech/simblock/blob/master/docs/jp/usage.md)
+- [User Guide (English)](https://github.com/RUB-InfSec/simblock/blob/master/docs/en/usage.md)
 
-SimBlock has a visualization tool, by which you can see the transition of block propagation.
 
-- [SimBlock Visualizer](https://github.com/dsg-titech/simblock-visualizer)
 
 ## License
 
@@ -17,4 +16,4 @@ SimBlock is licensed under the Apache License, Version2.0.
 
 ## Contact
 
-E-mail: dsg-titech at googlegroups.com
+E-mail: jannik.albrecht at ruhr-uni-bochum.de
